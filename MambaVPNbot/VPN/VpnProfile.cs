@@ -12,7 +12,7 @@ public class VpnProfile
         var message = update.Message;
         var user = message.From;
 
-        var userProfile = GenerateSertificate(user);
+        var userProfile = GenerateCertificate(user);
         await using Stream stream = File.OpenRead(userProfile);
         await botClient.SendDocumentAsync(
             chatId: user.Id,
@@ -20,7 +20,7 @@ public class VpnProfile
             caption: "Вот ваш OpenVPN профиль.");
     }
 
-    private string GenerateSertificate(User user)
+    private string GenerateCertificate(User user)
     {
         var scriptPath = "/etc/openvpn/gen-sert.sh";
         if (!File.Exists(scriptPath))
@@ -28,24 +28,21 @@ public class VpnProfile
             Bot.Logger.LogFatal("Bash script not found!");
             return string.Empty;
         }
-
-        // Создание нового процесса для выполнения sh скрипта
-        ProcessStartInfo processInfo = new ProcessStartInfo();
-        processInfo.FileName = "/bin/bash"; // Указываем оболочку, которая выполнит скрипт
+        
+        var processInfo = new ProcessStartInfo();
+        processInfo.FileName = "/bin/bash";
         processInfo.RedirectStandardInput = true;
         processInfo.RedirectStandardOutput = true;
         processInfo.UseShellExecute = false;
-
-        // Указываем путь к sh скрипту
+        
         processInfo.Arguments = $"{scriptPath} {user.Id}";
 
-        // Создаем новый процесс
+
         Process process = new Process();
         process.StartInfo = processInfo;
         process.Start();
-
-        // Ожидание запроса данных от скрипта
         string requiredData = ""; // password
+        
         using (StreamWriter sw = process.StandardInput)
         {
             if (sw.BaseStream.CanWrite)
