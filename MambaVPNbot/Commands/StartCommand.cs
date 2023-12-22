@@ -1,4 +1,5 @@
 using MambaVPNbot.Handlers;
+using MambaVPNbot.VPN;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -45,9 +46,11 @@ public class StartCommand
             await botClient.SendTextMessageAsync(
                 user.Id,
                 "Пароль <b>введён верно</b>.\n" +
-                "Пожалуйста, подождите некоторое время, я сейчас </b>пришлю ваш профиль<b> для OpenVPN.",
+                "Пожалуйста, подождите некоторое время, я сейчас <b>пришлю ваш профиль</b> для OpenVPN.",
                 parseMode: ParseMode.Html
             );
+
+            await new VpnProfile().SendUserProfileAsync(botClient, update);
         }
         catch (Exception ex) when (ex.Message == "Неверный пароль.")
         {
