@@ -6,43 +6,44 @@ namespace MambaVPNbot;
 class Program
 {
     private static MLogger Logger { get; set; }
-    private static Config BotConfig { get; set; }
-    
     private static async Task Main()
     {
         Logger = new MLogger();
+        var config = LoadConfigFromFile();
         
-        if (LoadConfigFromFile())
+        if (config is not null)
         {
             Logger.LogSuccess("Config loaded successfully.");
         }
         else
         {
-            InitializeConfig();
+            config = InitializeConfig();
         }
 
-        var bot = new Bot(BotConfig.BotToken, Logger, BotConfig.BotPassword);
+        var bot = new Bot(config, Logger);
         await bot.StartAsync();
         await Task.Delay(-1);
     }
 
-    private static bool LoadConfigFromFile()
+    private static Config? LoadConfigFromFile()
     {
-        if (!File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"))) return false;
+        if (!File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"))) 
+            return null;
+        
         var json = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"));
+        
         try
-        {
-            BotConfig = JsonSerializer.Deserialize<Config>(json);
-            return true;
+        { 
+            return JsonSerializer.Deserialize<Config>(json);
         }
         catch (JsonException ex)
         {
             Logger.LogError($"Error deserializing config: {ex.Message}");
-            return false;
+            return null;
         }
     }
 
-    private static void InitializeConfig()
+    private static Config InitializeConfig()
     {
         Logger.LogInformation("Enter the bot token:");
         var token = Console.ReadLine();
@@ -50,16 +51,24 @@ class Program
         Logger.LogInformation("Enter the bot password: ");
         var botPassword = Console.ReadLine();
 
-        BotConfig = new Config(token, botPassword);
+        Logger.LogInformation("Enter generate certificate script path: ");
+        var certificatePath = Console.ReadLine();
+        
+        Logger.LogInformation("Enter the script password: ");
+        var scriptPassword = Console.ReadLine();
 
-        SaveConfigToFile();
+        var config = new Config(token, botPassword, certificatePath, scriptPassword);
+        
+        SaveConfigToFile(config);
+
+        return config;
     }
 
-    private static void SaveConfigToFile()
+    private static void SaveConfigToFile(Config config)
     {
         try
         {
-            var jsonConfig = JsonSerializer.Serialize(BotConfig);
+            var jsonConfig = JsonSerializer.Serialize(config);
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json"), jsonConfig);
         }
         catch (Exception ex)

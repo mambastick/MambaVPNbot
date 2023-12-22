@@ -39,7 +39,7 @@ public class StartCommand
         
         try
         {
-            if (enteredPassword != Bot.BotPassword)
+            if (enteredPassword != Bot.Config.BotPassword)
                 throw new Exception("Неверный пароль.");
             
             new UserStateHandler().SetUserState(user.Id, UserState.Unknown);

@@ -9,18 +9,18 @@ namespace MambaVPNbot;
 
 public class Bot
 {
-    public Bot(string token, MLogger logger, string botPassword = "MambaVPN")
+    public Bot(Config config, MLogger logger)
     {
         Logger = logger;
         Logger.LogProcess("Initializing bot...");
 
-        BotClient = new TelegramBotClient(token);
-        BotPassword = botPassword;
+        BotClient = new TelegramBotClient(config.BotToken);
+        Config = config;
         
         Logger.LogSuccess("Bot has been initialized.");
     }
 
-    public static string BotPassword { get; set; }
+    public static Config Config { get; set; }
     public static MLogger Logger { get; private set; }
     private ITelegramBotClient BotClient { get; }
     

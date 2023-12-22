@@ -22,7 +22,7 @@ public class VpnProfile
 
     private string GenerateCertificate(User user)
     {
-        var scriptPath = "/etc/openvpn/gen-sert.sh";
+        var scriptPath = Bot.Config.CertScriptPath;
         if (!File.Exists(scriptPath))
         {
             Bot.Logger.LogFatal("Bash script not found!");
@@ -41,8 +41,8 @@ public class VpnProfile
         Process process = new Process();
         process.StartInfo = processInfo;
         process.Start();
-        string requiredData = ""; // password
         
+        string requiredData = Bot.Config.PasswordCaCert; // password for ca.crt
         using (StreamWriter sw = process.StandardInput)
         {
             if (sw.BaseStream.CanWrite)
